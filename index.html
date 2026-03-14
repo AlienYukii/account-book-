@@ -110,6 +110,8 @@
         localStorage.setItem('yuki_records', JSON.stringify(records));
     }
 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzslAu-NsoanzawEMUb_kUhzAXGBsbWMxYFIngAjfrtM0ElQbT9b6hOHml8fRkNg9llMw/exec"; 
+
     function addRecord() {
         const name = document.getElementById('itemName').value;
         const price = document.getElementById('itemPrice').value;
@@ -117,10 +119,22 @@
 
         if (!name || !price) return alert("請填寫完整資訊");
 
-        records.push({ name, price, category });
+        const newRecord = { name, price, category };
+
+        // 1. 先存到原本的 LocalStorage (保證速度)
+        records.push(newRecord);
+        updateUI();
+
+        // 2. 非同步傳送到 Google Sheets (保證持久性)
+        fetch(GAS_URL, {
+            method: "POST",
+            body: JSON.stringify(newRecord)
+        })
+        .then(res => console.log("雲端同步成功"))
+        .catch(err => alert("同步失敗，但已存在本地"));
+
         document.getElementById('itemName').value = '';
         document.getElementById('itemPrice').value = '';
-        updateUI();
     }
 
     function deleteRecord(index) {
