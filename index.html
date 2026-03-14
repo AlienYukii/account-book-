@@ -133,15 +133,19 @@
         formData.append('entry.637993658', name);     // 項目
         formData.append('entry.1321951296', price);    // 金額
 
-        fetch(FORM_ACTION_URL, {
-            method: 'POST',
-            mode: 'no-cors', // 務必保留，這是繞過權限檢查的關鍵
+        fetch(GAS_URL, {
+            method: "POST",
+            mode: "no-cors", // 關鍵：告訴瀏覽器不要預檢，直接噴出去
+            headers: {
+                "Content-Type": "text/plain" // GAS 接收 no-cors 時，用這個 header 最穩
+            },
+            body: JSON.stringify(newRecord)
         })
         .then(() => {
-            console.log("雲端同步請求已送出");
+            console.log("同步請求已發送至雲端");
         })
         .catch(err => {
-            console.error("同步失敗", err);
+            console.error("發送失敗:", err);
         });
 
         // 清空輸入框
