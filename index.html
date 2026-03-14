@@ -120,19 +120,31 @@
         if (!name || !price) return alert("請填寫完整資訊");
 
         const newRecord = { name, price, category };
-
-        // 1. 先存到原本的 LocalStorage (保證速度)
+        
+        // 1. 本地更新 (確保 UI 馬上有反應)
         records.push(newRecord);
         updateUI();
 
-        // 2. 非同步傳送到 Google Sheets (保證持久性)
-        fetch(GAS_URL, {
-            method: "POST",
-            body: JSON.stringify(newRecord)
-        })
-        .then(res => console.log("雲端同步成功"))
-        .catch(err => alert("同步失敗，但已存在本地"));
+        // 2. 透過 Google Form 同步到雲端
+        const FORM_ACTION_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc9V9KSYkEzEMGxhGybfbzsYTDpNLMDayiT6aNR52NNbncUJw/formResponse";
+        
+        const formData = new FormData();
+        formData.append('entry.888001191', category); // 類別
+        formData.append('entry.637993658', name);     // 項目
+        formData.append('entry.1321951296', price);    // 金額
 
+        fetch(FORM_ACTION_URL, {
+            method: 'POST',
+            mode: 'no-cors', // 務必保留，這是繞過權限檢查的關鍵
+        })
+        .then(() => {
+            console.log("雲端同步請求已送出");
+        })
+        .catch(err => {
+            console.error("同步失敗", err);
+        });
+
+        // 清空輸入框
         document.getElementById('itemName').value = '';
         document.getElementById('itemPrice').value = '';
     }
