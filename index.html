@@ -121,34 +121,30 @@
 
         const newRecord = { name, price, category };
         
-        // 1. 本地更新 (確保 UI 馬上有反應)
+        // 1. 本地更新
         records.push(newRecord);
         updateUI();
 
-        // 2. 透過 Google Form 同步到雲端
+        // 2. 雲端同步 (修正版：使用 URLSearchParams)
         const FORM_ACTION_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc9V9KSYkEzEMGxhGybfbzsYTDpNLMDayiT6aNR52NNbncUJw/formResponse";
         
-        const formData = new FormData();
-        formData.append('entry.888001191', category); // 類別
-        formData.append('entry.637993658', name);     // 項目
-        formData.append('entry.1321951296', price);    // 金額
+        const searchParams = new URLSearchParams();
+        searchParams.append('entry.888001191', category); // 類別
+        searchParams.append('entry.637993658', name);     // 項目
+        searchParams.append('entry.1321951296', price);    // 金額
 
-        fetch(GAS_URL, {
-            method: "POST",
-            mode: "no-cors", // 關鍵：告訴瀏覽器不要預檢，直接噴出去
+        fetch(FORM_ACTION_URL, {
+            method: 'POST',
+            mode: 'no-cors',
             headers: {
-                "Content-Type": "text/plain" // GAS 接收 no-cors 時，用這個 header 最穩
+                'Content-Type': 'application/x-www-form-urlencoded'
             },
-            body: JSON.stringify(newRecord)
+            body: searchParams.toString()
         })
-        .then(() => {
-            console.log("同步請求已發送至雲端");
-        })
-        .catch(err => {
-            console.error("發送失敗:", err);
-        });
+        .then(() => console.log("同步請求已送出"))
+        .catch(err => console.error("同步失敗", err));
 
-        // 清空輸入框
+        // 清空輸入
         document.getElementById('itemName').value = '';
         document.getElementById('itemPrice').value = '';
     }
